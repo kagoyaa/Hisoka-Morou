@@ -1401,18 +1401,6 @@ await fs.unlinkSync(outputFile)
 })
 }
 break
-case 'yts': case 'ytsearch': {
-if (!text) throw `Example : ${prefix + command} story wa anime`
-let yts = require("yt-search")
-let search = await yts(text)
-let teks = 'YouTube Search\n\n Result From '+text+'\n\n'
-let no = 1
-for (let i of search.all) {
-teks += `⭔ No : ${no++}\n⭔ Type : ${i.type}\n⭔ Video ID : ${i.videoId}\n⭔ Title : ${i.title}\n⭔ Views : ${i.views}\n⭔ Duration : ${i.timestamp}\n⭔ Upload At : ${i.ago}\n⭔ Author : ${i.author.name}\n⭔ Url : ${i.url}\n\n─────────────────\n\n`
-}
-hisoka.sendMessage(m.chat, { image: { url: search.all[0].thumbnail },  caption: teks }, { quoted: m })
-}
-break
 case 'google': {
 if (!text) throw `Example : ${prefix + command} fatih arridho`
 let google = require('google-it')
@@ -1447,81 +1435,6 @@ headerType: 4
 }
 hisoka.sendMessage(m.chat, buttonMessage, { quoted: m })
 })
-}
-break
-case 'play': case 'ytplay': {
-if (!text) throw `Example : ${prefix + command} story wa anime`
-let yts = require("yt-search")
-let search = await yts(text)
-let anu = search.videos[Math.floor(Math.random() * search.videos.length)]
-let buttons = [
-{buttonId: `ytmp3 ${anu.url}`, buttonText: {displayText: '♫ Audio'}, type: 1},
-{buttonId: `ytmp4 ${anu.url}`, buttonText: {displayText: '► Video'}, type: 1}
-]
-let buttonMessage = {
-image: { url: anu.thumbnail },
-caption: `
-⭔ Title : ${anu.title}
-⭔ Ext : Search
-⭔ ID : ${anu.videoId}
-⭔ Duration : ${anu.timestamp}
-⭔ Viewers : ${anu.views}
-⭔ Upload At : ${anu.ago}
-⭔ Author : ${anu.author.name}
-⭔ Channel : ${anu.author.url}
-⭔ Description : ${anu.description}
-⭔ Url : ${anu.url}`,
-footer: hisoka.user.name,
-buttons: buttons,
-headerType: 4
-}
-hisoka.sendMessage(m.chat, buttonMessage, { quoted: m })
-}
-break
-case 'ytmp3': case 'ytaudio': {
-let { yta } = require('./lib/y2mate')
-if (!text) throw `Example : ${prefix + command} https://youtube.com/watch?v=PtFMh6Tccag%27 128kbps`
-let quality = args[1] ? args[1] : '128kbps'
-let media = await yta(text, quality)
-if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
-hisoka.sendImage(m.chat, media.thumb, `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${isUrl(text)}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '128kbps'}`, m)
-hisoka.sendMessage(m.chat, { audio: { url: media.dl_link }, mimetype: 'audio/mpeg', fileName: `${media.title}.mp3` }, { quoted: m })
-}
-break
-case 'ytmp4': case 'ytvideo': {
-let { ytv } = require('./lib/y2mate')
-if (!text) throw `Example : ${prefix + command} https://youtube.com/watch?v=PtFMh6Tccag%27 360p`
-let quality = args[1] ? args[1] : '360p'
-let media = await ytv(text, quality)
-if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
-hisoka.sendMessage(m.chat, { video: { url: media.dl_link }, mimetype: 'video/mp4', fileName: `${media.title}.mp4`, caption: `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${isUrl(text)}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '360p'}` }, { quoted: m })
-}
-break
-case 'getmusic': {
-let { yta } = require('./lib/y2mate')
-if (!text) throw `Example : ${prefix + command} 1`
-if (!m.quoted) return m.reply('Reply Pesan')
-if (!m.quoted.isBaileys) throw `Hanya Bisa Membalas Pesan Dari Bot`
-let urls = quoted.text.match(new RegExp(/(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed|shorts)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)/, 'gi'))
-if (!urls) throw `Mungkin pesan yang anda reply tidak mengandung result ytsearch`
-let quality = args[1] ? args[1] : '128kbps'
-let media = await yta(urls[text - 1], quality)
-if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
-hisoka.sendImage(m.chat, media.thumb, `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${urls[text - 1]}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '128kbps'}`, m)
-hisoka.sendMessage(m.chat, { audio: { url: media.dl_link }, mimetype: 'audio/mpeg', fileName: `${media.title}.mp3` }, { quoted: m })
-}
-break
-case 'getvideo': {
-let { ytv } = require('./lib/y2mate')
-if (!text) throw `Example : ${prefix + command} 1`
-if (!m.quoted) return m.reply('Reply Pesan')
-if (!m.quoted.isBaileys) throw `Hanya Bisa Membalas Pesan Dari Bot`
-let urls = quoted.text.match(new RegExp(/(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed|shorts)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)/, 'gi'))
-if (!urls) throw `Mungkin pesan yang anda reply tidak mengandung result ytsearch`
-let quality = args[1] ? args[1] : '360p'
-let media = await ytv(urls[text - 1], quality)
-if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
-hisoka.sendMessage(m.chat, { video: { url: media.dl_link }, mimetype: 'video/mp4', fileName: `${media.title}.mp4`, caption: `⭔ Title : ${media.title}\n⭔ File Size : ${media.filesizeF}\n⭔ Url : ${urls[text - 1]}\n⭔ Ext : MP3\n⭔ Resolusi : ${args[1] || '360p'}` }, { quoted: m })
 }
 break
 case 'pinterest': {
@@ -2098,37 +2011,6 @@ let anu = await fetchJson(api('zenz', '/api/downloader/pinterestdl', { url: text
 hisoka.sendMessage(m.chat, { video: { url: anu.result }, caption: `Download From ${text}` }, { quoted: m })
 }
 break
-case 'umma': case 'ummadl': {
-if (!text) throw `Example : ${prefix + command} https://umma.id/channel/video/post/gus-arafat-sumber-kecewa-84464612933698`
-let { umma } = require('./lib) scraper')
-let anu = await umma(isUrl(text)[0])
-if (anu.type == 'video') {
-let buttons = [
-{buttonId: `ytmp3 ${anu.media[0]} 128kbps`, buttonText: {displayText: '♫ Audio'}, type: 1},
-{buttonId: `ytmp4 ${anu.media[0]} 360p`, buttonText: {displayText: '► Video'}, type: 1}
-]
-let buttonMessage = {
-image: { url: anu.author.profilePic },
-caption: `
-⭔ Title : ${anu.title}
-⭔ Author : ${anu.author.name}
-⭔ Like : ${anu.like}
-⭔ Caption : ${anu.caption}
-⭔ Url : ${anu.media[0]}
-Untuk Download Media Silahkan Klik salah satu Button dibawah ini atau masukkan command ytmp3/ytmp4 dengan url diatas
-`,
-footer: hisoka.user.name,
-buttons,
-headerType: 4
-}
-hisoka.sendMessage(m.chat, buttonMessage, { quoted: m })
-} else if (anu.type == 'image') {
-anu.media.map(async (url) => {
-hisoka.sendMessage(m.chat, { image: { url }, caption: `⭔ Title : ${anu.title}\n⭔ Author : ${anu.author.name}\n⭔ Like : ${anu.like}\n⭔ Caption : ${anu.caption}` }, { quoted: m })
-})
-}
-}
-break
 case 'ringtone': {
 if (!text) throw `Example : ${prefix + command} black rover`
 let { ringtone } = require('./lib/scraper')
@@ -2546,18 +2428,11 @@ anu = `╭•「 *Group Menu* 」
 ├• ${prefix}twittermp3 [url]
 ├• ${prefix}facebook [url]
 ├• ${prefix}pinterestdl [url]
-├• ${prefix}ytmp3 [url]
-├• ${prefix}ytmp4 [url]
-├• ${prefix}getmusic [query]
-├• ${prefix}getvideo [query]
-├• ${prefix}umma [url]
 ├• ${prefix}joox [query]
 ├• ${prefix}soundcloud [url]
 ╰────────❒
 
 ╭•「 *Search Menu* 」
-├• ${prefix}play [query]
-├• ${prefix}yts [query]
 ├• ${prefix}google [query]
 ├• ${prefix}gimage [query]
 ├• ${prefix}pinterest [query]
